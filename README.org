@@ -77,16 +77,24 @@ Run this command to delete the app image.
 ** Summary (Strengths and Weaknesses)
 
 *** Strengths
-**** Modular and Composable Design: The code follows functional programming principles, making it **highly composable** and **modular**. Functions are dedicated to specific tasks like parsing CIGAR strings and generating alignments, improving maintainability and extensibility.
-**** Optimized for Readability and Quality: The script is formatted using black and checked with pylint, ensuring a consistent coding style and readability. These tools also help enforce best practices and minimize potential errors.
-**** Pythonic Code: The code leverages Python's built-in functional features such as dataclasses, lru_cache, and list comprehensions. By focusing on writing expressive, Pythonic code, the script adheres to best practices, making it more concise, maintainable, and efficient.
-**** Performance Improvements: The use of lru_cache significantly enhances performance by avoiding redundant calculations, particularly during repeated tasks, ensuring the code scales well even for larger inputs.
-**** Documentation and Naming: Clear function names and detailed docstrings make the code understandable for other developers. This attention to documentation improves long-term maintainability.
+**** Modular and Composable Design
+The code follows functional programming principles, making it **highly composable** and **modular**. Functions are dedicated to specific tasks like parsing CIGAR strings and generating alignments, improving maintainability and extensibility.
+**** Optimized for Readability and Quality
+The script is formatted using black and checked with pylint, ensuring a consistent coding style and readability. These tools also help enforce best practices and minimize potential errors.
+**** Pythonic Code
+ The code leverages Python's built-in functional features such as dataclasses, lru_cache, and list comprehensions. By focusing on writing expressive, Pythonic code, the script adheres to best practices, making it more concise, maintainable, and efficient.
+**** Performance Improvements
+ The use of lru_cache significantly enhances performance by avoiding redundant calculations, particularly during repeated tasks, ensuring the code scales well even for larger inputs.
+**** Documentation and Naming
+ Clear function names and detailed docstrings make the code understandable for other developers. This attention to documentation improves long-term maintainability.
 *** Weaknesses
 
-**** CIGAR Parsing Efficiency: The current approach uses eager evaluation (re.findall), which might not scale well with larger datasets. Transitioning to a lazy evaluation strategy could improve efficiency and reduce memory consumption for bigger data sets.
-**** Mapping Generation Efficiency: The function that generates the mappings (alignments) also suffers from an eager evaluation approach. It currently creates all possible alignment tuples in advance, even if only a subset of those are needed. A better approach would be to implement a lazy evaluation method where alignment objects (such as Expr or tuples) are generated only when required. This would enhance performance and avoid unnecessary computations for larger data inputs.
-**** Limited Error Scenarios: While the script handles some basic error cases, it would benefit from more comprehensive testing and error handling. Particularly, additional checks for malformed CIGAR strings or incomplete input data could make the script more robust and fault-tolerant.
+**** CIGAR Parsing Efficiency
+ The current approach uses eager evaluation (re.findall), which might not scale well with larger datasets. Transitioning to a lazy evaluation strategy could improve efficiency and reduce memory consumption for bigger data sets.
+**** Mapping Generation Efficiency
+ The function that generates the mappings (alignments) also suffers from an eager evaluation approach. It currently creates all possible alignment tuples in advance, even if only a subset of those are needed. A better approach would be to implement a lazy evaluation method where alignment objects (such as Expr or tuples) are generated only when required. This would enhance performance and avoid unnecessary computations for larger data inputs.
+**** Limited Error Scenarios
+ While the script handles some basic error cases, it would benefit from more comprehensive testing and error handling. Particularly, additional checks for malformed CIGAR strings or incomplete input data could make the script more robust and fault-tolerant.
 
 ** Build image
 Run docker with make to create the run time image.
