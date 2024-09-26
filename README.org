@@ -1,6 +1,22 @@
 #+TITLE: Code assignment
-#+PROPERTY: header-args :eval never-export :results drawer :noweb no :tangle no 
-#+PROPERTY: header-args:shell :shebang #!/usr/bin/env -S bash -euo pipefail
+#+PROPERTY: header-args :eval never-export :results code :noweb no :tangle no :exports both
+#+PROPERTY: header-args:shell :shebang #!/usr/bin/env -S bash -euo pipefail 
+#+OPTIONS: toc:3
+#+OPTIONS: broken-links:mark
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+STARTUP: overview
+
+* Table of contents :toc:
+- [[#code-refactor-moviedetailgetterpy][Code Refactor (MovieDetailGetter.py)]]
+  - [[#summary][Summary]]
+  - [[#build-image][Build image]]
+  - [[#running][Running]]
+  - [[#deleting-the-image][Deleting the image]]
+- [[#alignment-mapping-cigar-string][Alignment Mapping (Cigar string)]]
+  - [[#summary-strengths-and-weaknesses][Summary (Strengths and Weaknesses)]]
+  - [[#build-image-1][Build image]]
+  - [[#running-1][Running]]
+  - [[#deleting-the-image-1][Deleting the image]]
 
 * Code Refactor (MovieDetailGetter.py)
 ** Summary
@@ -19,12 +35,95 @@ To improve the script’s extensibility, I made modifications to the setup.py fi
 
 ** Build image 
 Run docker with make to create the run time image.
-#+BEGIN_SRC shell 
+#+BEGIN_SRC shell :results code :exports both 
   make -C ./test_1 build
 #+END_SRC
 
+#+RESULTS:
+#+begin_src shell
+make: Entering directory '/home/hugo/projects/job_test/repo/test_1'
+docker build -t "dev-movie-detail-getter" . && docker run --rm -i "dev-movie-detail-getter"
+[1/2] STEP 1/9: FROM python:3.12-alpine AS base_image
+[1/2] STEP 2/9: ARG VENV="/opt/venv"
+--> Using cache f4393dc8c9564f3c1a13471cc04c4eb6c4099e278f23a0e6eac7a9cf987941ad
+--> f4393dc8c956
+[1/2] STEP 3/9: WORKDIR /tmp/build
+--> Using cache d9e9f18adb51d120dd1475256fc9c620441322bbc8a5f122fbd498d799f42fa0
+--> d9e9f18adb51
+[1/2] STEP 4/9: RUN :     && apk update     && apk add --no-cache git     && :
+--> Using cache ece00f9aad101ca98f34014a565254862f040e16057fb730abb000e86415f657
+--> ece00f9aad10
+[1/2] STEP 5/9: COPY requirements.txt requirements.txt
+--> Using cache 730c00be60080beae998b8e860061b9a2b8410f2a8e3fcf8171f474881a0b06b
+--> 730c00be6008
+[1/2] STEP 6/9: RUN :     && /usr/bin/env python3 -m venv "${VENV}"     && "${VENV}/bin/python3" -m pip install --upgrade --no-cache-dir pip     && "${VENV}/bin/python3" -m pip install --no-cache-dir -r requirements.txt     && :
+--> Using cache 72b1e3b3fd8224331f2daccca4c8e1b35a6e4dfad426dff462fc92759d78ea21
+--> 72b1e3b3fd82
+[1/2] STEP 7/9: COPY setup.py setup.py
+--> Using cache 2abdc6ace9097a2ee3a5cd8133a9138a49480a0f0c84332e7b29adcfce3cae22
+--> 2abdc6ace909
+[1/2] STEP 8/9: COPY MovieDetailgetter.py MovieDetailgetter.py
+--> Using cache 27fad416f2649dec20b372607ff130c9b853db21c65da25a3dff3de1beb33d14
+--> 27fad416f264
+[1/2] STEP 9/9: RUN :     && "${VENV}/bin/python3" setup.py install     && :
+--> Using cache c03bcfe70311ad2d5ea5378e051a2c69373cb9333c6b5df24b76adef740fced8
+--> c03bcfe70311
+[2/2] STEP 1/6: FROM python:3.12-alpine AS runner
+[2/2] STEP 2/6: ARG VENV="/opt/venv"
+--> Using cache f4393dc8c9564f3c1a13471cc04c4eb6c4099e278f23a0e6eac7a9cf987941ad
+--> f4393dc8c956
+[2/2] STEP 3/6: COPY --from=base_image "${VENV}" "${VENV}"
+--> Using cache c15b025214956c9957326448d1b2bbe6ef509d860038a26f164eeb1f35249978
+--> c15b02521495
+[2/2] STEP 4/6: ENV PATH="${VENV}/bin:${PATH}"
+--> Using cache 8b72f555da03d5bdbd3384939f2d90858b82914483d569d20df9c9560c373f1c
+--> 8b72f555da03
+[2/2] STEP 5/6: ENTRYPOINT [ "MovieDetailgetter.py" ]
+--> Using cache 9ee048bd1df9607a81e10be8cdfc5dd2490ee1c3419ee3e318d6818cd8f0d8b0
+--> 9ee048bd1df9
+[2/2] STEP 6/6: CMD [ "--help" ]
+--> Using cache 552fde5c8097e30dd02a4c33eb81323e25ba50bb270c74f2dd88472e042b205b
+[2/2] COMMIT dev-movie-detail-getter
+--> 552fde5c8097
+Successfully tagged localhost/dev-movie-detail-getter:latest
+552fde5c8097e30dd02a4c33eb81323e25ba50bb270c74f2dd88472e042b205b
+MovieDetailgetter.py
+
+Usage:
+    MovieDetailgetter.py db <DB_NAME> ( --dump | --create )
+    MovieDetailgetter.py query <DB_NAME> --movie_title=<MOVIE_TITLE> [--get_field=<FIELD_NAME>] [--formatter=<FORMATTER>]
+
+Options:
+    -h, --help                       Show this screen.
+    -d, --dump                       Print the database content.
+    -c, --create                     Create a new database.
+    -m, --movie_title=<MOVIE_TITLE>   Search for a specific movie by its title.
+    -g, --get_field=<FIELD_NAME>      Specify the field to retrieve [default: rating].
+    -f, --formatter=<FORMATTER>       Specify an output formatter for the query [default: default].
+
+Description:
+  MovieDetailgetter.py allows interaction with an IMDb database (Top 250 movies). 
+  The 'db' command supports dumping or creating a database.
+  The 'query' command searches for a specific movie by its title, with optional customizations 
+  to retrieve specific fields and format the output.
+
+  Formatters:
+  - "default":
+    Prints a formatted string with the specified field and value:
+
+    $ MovieDetailgetter.py query imdb_top_250_movies.csv --movie_title 'The Shawshank Redemption'
+    The Shawshank Redemption: rating is 9.3
+
+  - "funny":
+    Renders the movie rating using the cowsay library:
+
+    $ MovieDetailgetter.py query imdb_top_250_movies.csv --movie_title 'The Shawshank Redemption' --get_field year --formatter funny
+    <cowsay string>
+make: Leaving directory '/home/hugo/projects/job_test/repo/test_1'
+#+end_src
+
 ** Running
-#+BEGIN_SRC shell
+#+BEGIN_SRC shell :results code :exports both
   cd ./test_1
 
   # Remove the read_only (:ro) arg to create the db.
@@ -46,7 +145,7 @@ Run docker with make to create the run time image.
 #+END_SRC
 
 #+RESULTS:
-:results:
+#+begin_src shell
 [DB DUMP]
 place,movie_title,rating,year,star_cast
 1,Planet Earth II,9.442943242909964,2016,"David Attenborough, Chadden Hunter"
@@ -65,13 +164,26 @@ Planet Earth II: rating is 9.442943242909964!
                 ||----w |
                 ||     ||
 
-:end:
+#+end_src
 
 ** Deleting the image
 Run this command to delete the app image.
-#+BEGIN_SRC shell
-  make -C ./test_2/ clean
+#+BEGIN_SRC shell :results code :exports both
+  make -C ./test_1/ clean
 #+END_SRC
+
+#+RESULTS:
+#+begin_src shell
+make: Entering directory '/home/hugo/projects/job_test/repo/test_1'
+docker image rm "dev-movie-detail-getter"
+Untagged: localhost/dev-movie-detail-getter:latest
+Deleted: 552fde5c8097e30dd02a4c33eb81323e25ba50bb270c74f2dd88472e042b205b
+Deleted: 9ee048bd1df9607a81e10be8cdfc5dd2490ee1c3419ee3e318d6818cd8f0d8b0
+Deleted: 8b72f555da03d5bdbd3384939f2d90858b82914483d569d20df9c9560c373f1c
+Deleted: c15b025214956c9957326448d1b2bbe6ef509d860038a26f164eeb1f35249978
+make: Leaving directory '/home/hugo/projects/job_test/repo/test_1'
+#+end_src
+
 * Alignment Mapping (Cigar string)
 
 ** Summary (Strengths and Weaknesses)
@@ -98,56 +210,73 @@ The script is formatted using black and checked with pylint, ensuring a consiste
 
 ** Build image
 Run docker with make to create the run time image.
-#+BEGIN_SRC shell 
+#+BEGIN_SRC shell :results code :exports both 
   make -C ./test_2 build
 #+END_SRC
 
 #+RESULTS:
-:results:
+#+begin_src shell
 make: Entering directory '/home/hugo/projects/job_test/repo/test_2'
-docker build -t part-2-solver .
-[1/2] STEP 1/8: FROM python:3.12 AS base_image
+docker build -t part-2-solver . && docker run --rm -i part-2-solver
+[1/2] STEP 1/8: FROM python:3.12-alpine AS base_image
 [1/2] STEP 2/8: ARG VENV="/opt/venv"
---> Using cache fab28f936a2d692ff5c37a5cc65370b67f0b49e9ddfe14f4137478fe4a1858e0
---> fab28f936a2d
+--> Using cache f4393dc8c9564f3c1a13471cc04c4eb6c4099e278f23a0e6eac7a9cf987941ad
+--> f4393dc8c956
 [1/2] STEP 3/8: WORKDIR /tmp/build
---> Using cache 1e6e72c87c7865b0cceeac3fa8f0fb57a395612e2442689f74ddf57af08f46a1
---> 1e6e72c87c78
+--> Using cache d9e9f18adb51d120dd1475256fc9c620441322bbc8a5f122fbd498d799f42fa0
+--> d9e9f18adb51
 [1/2] STEP 4/8: COPY requirements.txt requirements.txt
---> Using cache 5f734d6b5fdb3409d7ccc22dff773d54d60eaec72963fe75dcd29c9b7c945b78
---> 5f734d6b5fdb
-[1/2] STEP 5/8: RUN :     && /usr/bin/env python3 -m venv "${VENV}"     && "${VENV}/bin/python3" -m pip install --upgrade --no-cache-dir pip setuptools     && "${VENV}/bin/python3" -m pip install --no-cache-dir -r requirements.txt     && :
---> Using cache 18cbf44ac07f5ebd5beba471b636f94c48446d6822c44fe1dd1e46b1c59c8a57
---> 18cbf44ac07f
+--> Using cache 9de1ddc6489fbdb7a18dacb5c5ff4fab8b619621cd8dbfc20cb1d1e2ff0d975c
+--> 9de1ddc6489f
+[1/2] STEP 5/8: RUN :     && /usr/bin/env python3 -m venv "${VENV}"     && "${VENV}/bin/python3" -m pip install --upgrade --no-cache-dir pip     && "${VENV}/bin/python3" -m pip install --no-cache-dir -r requirements.txt     && :
+--> Using cache dc6ad65dd1818bc29d1aaabfc79f790cb60adcc2d91261dbb674242619b61d2a
+--> dc6ad65dd181
 [1/2] STEP 6/8: COPY setup.py setup.py
---> Using cache 70befd82a22218dbe4f5f04ceb88e8a2809415c81db2c4503ebc55c2da6791c3
---> 70befd82a222
-[1/2] STEP 7/8: COPY part2_solve.py part2_solve.py
---> Using cache 97dadd8c2d8aafb179f9b0f25808ab1c9545a6bcbec9478a5e29d7eeebd19861
---> 97dadd8c2d8a
+--> Using cache 91f4de717a059d1d2cf11a7c5a82b0df51f6d642932b1252a23ac930ee48fe20
+--> 91f4de717a05
+[1/2] STEP 7/8: COPY part2_solver.py part2_solver.py
+--> Using cache c9d877c6f78ac1a6dc7888d66c62df728770fe2efb1ae5761554cb86af4ca8e1
+--> c9d877c6f78a
 [1/2] STEP 8/8: RUN :     && "${VENV}/bin/python3" setup.py install     && :
---> Using cache a827d629fe04dea595e4a52c4adb40b880188d65bf6617ca8f29848956bccd2e
---> a827d629fe04
-[2/2] STEP 1/4: FROM python:3.12 AS runner
-[2/2] STEP 2/4: ARG VENV="/opt/venv"
---> Using cache fab28f936a2d692ff5c37a5cc65370b67f0b49e9ddfe14f4137478fe4a1858e0
---> fab28f936a2d
-[2/2] STEP 3/4: COPY --from=base_image "${VENV}" "${VENV}"
---> Using cache 0b80d4417a959f176c887d63f85639b95b33a8f95a09c6be4e3592fc989ad4da
---> 0b80d4417a95
-[2/2] STEP 4/4: ENV PATH="${VENV}/bin:${PATH}"
---> Using cache a8825b958fdba259e06c7195cebb1b447d70fe2fb25c4ed4bbf4cc7f3d1f0795
+--> Using cache 029c0f49cfbf3db84fb924bad4ac2981e724603149eb4680a385d00e2b2edee1
+--> 029c0f49cfbf
+[2/2] STEP 1/8: FROM python:3.12-alpine AS runner
+[2/2] STEP 2/8: ARG VENV="/opt/venv"
+--> Using cache f4393dc8c9564f3c1a13471cc04c4eb6c4099e278f23a0e6eac7a9cf987941ad
+--> f4393dc8c956
+[2/2] STEP 3/8: COPY --from=base_image "${VENV}" "${VENV}"
+--> 37d2f47a1951
+[2/2] STEP 4/8: RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+--> eb6132fc6f04
+[2/2] STEP 5/8: USER appuser
+--> a527d2549b50
+[2/2] STEP 6/8: ENV PATH="${VENV}/bin:${PATH}"
+--> 84fd5450a968
+[2/2] STEP 7/8: ENTRYPOINT [ "part2_solver.py" ]
+--> c9f58b7ff881
+[2/2] STEP 8/8: CMD [ "--help" ]
 [2/2] COMMIT part-2-solver
---> a8825b958fdb
+--> e530f7835e36
 Successfully tagged localhost/part-2-solver:latest
-a8825b958fdba259e06c7195cebb1b447d70fe2fb25c4ed4bbf4cc7f3d1f0795
+e530f7835e362b6f1de7615d0d9eae3e3fadbff3fa079f70b4b085b299d95eff
+Part 2 solver
+
+Usage:
+    part2_solver.py <COORDS_TSV> <QUERIES_TSV>
+
+Arguments:
+    <COORDS_TSV>   Path to the TSV file containing coordinates.
+    <QUERIES_TSV>  Path to the TSV file containing queries.
+
+Options:
+    -h --help  Show this screen.
 make: Leaving directory '/home/hugo/projects/job_test/repo/test_2'
-:end:
+#+end_src
 
 ** Running
 Let's run the code with the example and check if the results match.
 
-#+BEGIN_SRC shell
+#+BEGIN_SRC shell :results code :exports both
   cd ./test_2
 
   docker run --rm -i -v "${PWD}:${PWD}:ro" -w "${PWD}" \
@@ -155,29 +284,30 @@ Let's run the code with the example and check if the results match.
 #+END_SRC
 
 #+RESULTS:
-:results:
+#+begin_src shell
 TR1	4	CHR1	7
 TR1	13	CHR1	23
 TR2	0	CHR2	10
 TR2	10	CHR2	20
-:end:
+#+end_src
 
 ** Deleting the image
 Run this command to delete the app image.
-#+BEGIN_SRC shell
+
+#+BEGIN_SRC shell :results code :exports both
   make -C ./test_2/ clean
 #+END_SRC
 
 #+RESULTS:
-:results:
+#+begin_src shell
 make: Entering directory '/home/hugo/projects/job_test/repo/test_2'
 docker image rm part-2-solver
 Untagged: localhost/part-2-solver:latest
-Deleted: 325dad98c380d5b85e1e92985b25f28b131fbb11bf3d2e18eef0b1b7639c22b9
-Deleted: b3761685862d292616adcee08f5ec3b41827bd01c149e6f1996e4fd68b3f7b4a
-Deleted: 20cdf3a628cdf78663e8f680c5320c4f6838f93a6ad43883baf2d66f2ad50caa
-Deleted: 1defd2e9bfec233a496fda4c38e2c4a6304e595ae9a2e05042393ba4be1599d7
-Deleted: cdbb56ae8ca2514569db28bb279a435a661411cf7099599c62b512fd337de5f1
-Deleted: c276b1f7146a74fcc5d63cc9afadc4c6364e2a79b5a5c478aa153ac136e01e2e
+Deleted: 2ce10fd5308c098a52524c3fe238fc5ab912b9b12c8c7d291b939642c1d4b4d9
+Deleted: f21063f9693c6b77125749c9a5f6a2be7f179c239e3a8dde4490d877353e2d5f
+Deleted: e498e69f2cb7efbbe4500aac333093af137cd2f8e81e2f6c176d0b80e7bd17a3
+Deleted: 78082a7940d34fa88112756a761e0b0968b63c1ee59e58c855d2b4310c0405c5
+Deleted: 7e1c1ab4e840ae60a15a40f5bc5afd297ce95863fcbf6f9700536e8ba4cfae44
+Deleted: fada75a70b086fd4eafd62df5c09f8640102ee8a4b39fced5e9b820b271cf04d
 make: Leaving directory '/home/hugo/projects/job_test/repo/test_2'
-:end:
+#+end_src
