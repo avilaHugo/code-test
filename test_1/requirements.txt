@@ -1,0 +1,19 @@
+certifi==2024.8.30
+charset-normalizer==3.3.2
+cinemagoer @ git+https://github.com/cinemagoer/cinemagoer@193ec421a944b2b2e2ab2446d89307884fd3b5f8
+docopt==0.6.2
+greenlet==3.1.1
+idna==3.10
+lxml==5.3.0
+numpy==2.1.1
+pandas==2.2.3
+python-cowsay==1.2.0
+python-dateutil==2.9.0.post0
+pytz==2024.2
+requests==2.32.3
+setuptools==66.1.1
+six==1.16.0
+SQLAlchemy==2.0.35
+typing_extensions==4.12.2
+tzdata==2024.2
+urllib3==2.2.3

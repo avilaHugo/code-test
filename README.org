@@ -1,0 +1,175 @@
+#+TITLE: Code assignment
+#+PROPERTY: header-args :eval never-export :results drawer :noweb no :tangle no 
+#+PROPERTY: header-args:shell :shebang #!/usr/bin/env -S bash -euo pipefail
+
+* Code Refactor (MovieDetailGetter.py)
+** Summary
+
+*** Code Organization and Modularity
+The original script was procedural and lacked structure, with large blocks of code handling multiple tasks. During the refactor, I introduced clear modularity by splitting the code into distinct functions, such as get_top250_movies, database_handler, and query_database. I also incorporated decorators like @formatter and @subcommand, which streamline functionality and make future enhancements (such as adding new formatters or subcommands) simple and low-risk. This modular approach ensures that new features can be added without the risk of breaking existing functionality.
+
+*** Clarity and Readability
+The original code suffered from poor readability, including inconsistent naming, unused imports, and numerous commented-out sections. To improve clarity, I cleaned up imports, removed unnecessary comments, and renamed functions to more descriptive terms, such as replacing Printratingofmoviefromfile with extract_info_from_movie_as_dict. I also documented every function with proper docstrings to enhance maintainability. For additional clarity and to ensure consistent coding standards, I implemented type checking, used pylint for linting, and formatted the code with black.
+
+*** Error Handling and Robustness
+The original script lacked proper error handling, with some exceptions being caught but ignored. I introduced more robust error management by creating a custom exception, NoMatchFoundError, and used assertions to halt execution when necessary (e.g., when the database is empty). This not only improves error reporting but also ensures that the script does not fail silently. The added type checking further enhances the robustness by catching potential issues early in the development process.
+
+*** Extensibility and Deployment
+To improve the script’s extensibility, I made modifications to the setup.py file to ensure the script is installable as a package. Additionally, I created a Docker image, making deployment simpler across different environments. These improvements not only enhance the modularity of the code but also make it more accessible for future growth and easier to run in any setup.
+
+** Build image 
+Run docker with make to create the run time image.
+#+BEGIN_SRC shell 
+  make -C ./test_1 build
+#+END_SRC
+
+** Running
+#+BEGIN_SRC shell
+  cd ./test_1
+
+  # Remove the read_only (:ro) arg to create the db.
+  dev-movie-detail-getter() {
+      docker run --rm -i -v "${PWD}:${PWD}:ro" -w "${PWD}" dev-movie-detail-getter "${@}"
+  }
+
+  echo "[DB DUMP]"
+  dev-movie-detail-getter db ./input.csv --dump
+  echo
+
+  echo "[QUERY]"
+  dev-movie-detail-getter query ./input.csv --movie_title "Planet Earth II"
+  echo 
+  
+  echo "[QUERY - GET YEAR - FUNNY FORMATTER]"
+  dev-movie-detail-getter query ./input.csv --movie_title "Planet Earth II" --get_field year --formatter funny
+  echo 
+#+END_SRC
+
+#+RESULTS:
+:results:
+[DB DUMP]
+place,movie_title,rating,year,star_cast
+1,Planet Earth II,9.442943242909964,2016,"David Attenborough, Chadden Hunter"
+2,Breaking Bad,9.42441683160262,2008,"Bryan Cranston, Aaron Paul"
+
+[QUERY]
+Planet Earth II: rating is 9.442943242909964!
+
+[QUERY - GET YEAR - FUNNY FORMATTER]
+ ________________________________ 
+< Planet Earth II: year is 2016! >
+ -------------------------------- 
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+:end:
+
+** Deleting the image
+Run this command to delete the app image.
+#+BEGIN_SRC shell
+  make -C ./test_2/ clean
+#+END_SRC
+* Alignment Mapping (Cigar string)
+
+** Summary (Strengths and Weaknesses)
+
+*** Strengths
+**** Modular and Composable Design: The code follows functional programming principles, making it **highly composable** and **modular**. Functions are dedicated to specific tasks like parsing CIGAR strings and generating alignments, improving maintainability and extensibility.
+**** Optimized for Readability and Quality: The script is formatted using black and checked with pylint, ensuring a consistent coding style and readability. These tools also help enforce best practices and minimize potential errors.
+**** Pythonic Code: The code leverages Python's built-in functional features such as dataclasses, lru_cache, and list comprehensions. By focusing on writing expressive, Pythonic code, the script adheres to best practices, making it more concise, maintainable, and efficient.
+**** Performance Improvements: The use of lru_cache significantly enhances performance by avoiding redundant calculations, particularly during repeated tasks, ensuring the code scales well even for larger inputs.
+**** Documentation and Naming: Clear function names and detailed docstrings make the code understandable for other developers. This attention to documentation improves long-term maintainability.
+*** Weaknesses
+
+**** CIGAR Parsing Efficiency: The current approach uses eager evaluation (re.findall), which might not scale well with larger datasets. Transitioning to a lazy evaluation strategy could improve efficiency and reduce memory consumption for bigger data sets.
+**** Mapping Generation Efficiency: The function that generates the mappings (alignments) also suffers from an eager evaluation approach. It currently creates all possible alignment tuples in advance, even if only a subset of those are needed. A better approach would be to implement a lazy evaluation method where alignment objects (such as Expr or tuples) are generated only when required. This would enhance performance and avoid unnecessary computations for larger data inputs.
+**** Limited Error Scenarios: While the script handles some basic error cases, it would benefit from more comprehensive testing and error handling. Particularly, additional checks for malformed CIGAR strings or incomplete input data could make the script more robust and fault-tolerant.
+
+** Build image
+Run docker with make to create the run time image.
+#+BEGIN_SRC shell 
+  make -C ./test_2 build
+#+END_SRC
+
+#+RESULTS:
+:results:
+make: Entering directory '/home/hugo/projects/job_test/repo/test_2'
+docker build -t part-2-solver .
+[1/2] STEP 1/8: FROM python:3.12 AS base_image
+[1/2] STEP 2/8: ARG VENV="/opt/venv"
+--> Using cache fab28f936a2d692ff5c37a5cc65370b67f0b49e9ddfe14f4137478fe4a1858e0
+--> fab28f936a2d
+[1/2] STEP 3/8: WORKDIR /tmp/build
+--> Using cache 1e6e72c87c7865b0cceeac3fa8f0fb57a395612e2442689f74ddf57af08f46a1
+--> 1e6e72c87c78
+[1/2] STEP 4/8: COPY requirements.txt requirements.txt
+--> Using cache 5f734d6b5fdb3409d7ccc22dff773d54d60eaec72963fe75dcd29c9b7c945b78
+--> 5f734d6b5fdb
+[1/2] STEP 5/8: RUN :     && /usr/bin/env python3 -m venv "${VENV}"     && "${VENV}/bin/python3" -m pip install --upgrade --no-cache-dir pip setuptools     && "${VENV}/bin/python3" -m pip install --no-cache-dir -r requirements.txt     && :
+--> Using cache 18cbf44ac07f5ebd5beba471b636f94c48446d6822c44fe1dd1e46b1c59c8a57
+--> 18cbf44ac07f
+[1/2] STEP 6/8: COPY setup.py setup.py
+--> Using cache 70befd82a22218dbe4f5f04ceb88e8a2809415c81db2c4503ebc55c2da6791c3
+--> 70befd82a222
+[1/2] STEP 7/8: COPY part2_solve.py part2_solve.py
+--> Using cache 97dadd8c2d8aafb179f9b0f25808ab1c9545a6bcbec9478a5e29d7eeebd19861
+--> 97dadd8c2d8a
+[1/2] STEP 8/8: RUN :     && "${VENV}/bin/python3" setup.py install     && :
+--> Using cache a827d629fe04dea595e4a52c4adb40b880188d65bf6617ca8f29848956bccd2e
+--> a827d629fe04
+[2/2] STEP 1/4: FROM python:3.12 AS runner
+[2/2] STEP 2/4: ARG VENV="/opt/venv"
+--> Using cache fab28f936a2d692ff5c37a5cc65370b67f0b49e9ddfe14f4137478fe4a1858e0
+--> fab28f936a2d
+[2/2] STEP 3/4: COPY --from=base_image "${VENV}" "${VENV}"
+--> Using cache 0b80d4417a959f176c887d63f85639b95b33a8f95a09c6be4e3592fc989ad4da
+--> 0b80d4417a95
+[2/2] STEP 4/4: ENV PATH="${VENV}/bin:${PATH}"
+--> Using cache a8825b958fdba259e06c7195cebb1b447d70fe2fb25c4ed4bbf4cc7f3d1f0795
+[2/2] COMMIT part-2-solver
+--> a8825b958fdb
+Successfully tagged localhost/part-2-solver:latest
+a8825b958fdba259e06c7195cebb1b447d70fe2fb25c4ed4bbf4cc7f3d1f0795
+make: Leaving directory '/home/hugo/projects/job_test/repo/test_2'
+:end:
+
+** Running
+Let's run the code with the example and check if the results match.
+
+#+BEGIN_SRC shell
+  cd ./test_2
+
+  docker run --rm -i -v "${PWD}:${PWD}:ro" -w "${PWD}" \
+         part-2-solver input_{1,2}.tsv
+#+END_SRC
+
+#+RESULTS:
+:results:
+TR1	4	CHR1	7
+TR1	13	CHR1	23
+TR2	0	CHR2	10
+TR2	10	CHR2	20
+:end:
+
+** Deleting the image
+Run this command to delete the app image.
+#+BEGIN_SRC shell
+  make -C ./test_2/ clean
+#+END_SRC
+
+#+RESULTS:
+:results:
+make: Entering directory '/home/hugo/projects/job_test/repo/test_2'
+docker image rm part-2-solver
+Untagged: localhost/part-2-solver:latest
+Deleted: 325dad98c380d5b85e1e92985b25f28b131fbb11bf3d2e18eef0b1b7639c22b9
+Deleted: b3761685862d292616adcee08f5ec3b41827bd01c149e6f1996e4fd68b3f7b4a
+Deleted: 20cdf3a628cdf78663e8f680c5320c4f6838f93a6ad43883baf2d66f2ad50caa
+Deleted: 1defd2e9bfec233a496fda4c38e2c4a6304e595ae9a2e05042393ba4be1599d7
+Deleted: cdbb56ae8ca2514569db28bb279a435a661411cf7099599c62b512fd337de5f1
+Deleted: c276b1f7146a74fcc5d63cc9afadc4c6364e2a79b5a5c478aa153ac136e01e2e
+make: Leaving directory '/home/hugo/projects/job_test/repo/test_2'
+:end:

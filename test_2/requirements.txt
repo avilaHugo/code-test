@@ -1,0 +1,4 @@
+pandas
+toolz
+docopt
+setuptools==66.1.1
