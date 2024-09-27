@@ -8,17 +8,34 @@
 
 * Table of contents :toc:
 - [[#code-refactor-moviedetailgetterpy][Code Refactor (MovieDetailGetter.py)]]
+  - [[#manifest][Manifest]]
   - [[#summary][Summary]]
   - [[#build-image][Build image]]
   - [[#running][Running]]
   - [[#deleting-the-image][Deleting the image]]
-- [[#alignment-mapping-cigar-string][Alignment Mapping (Cigar string)]]
+- [[#alignment-mapping-cigar-string][Alignment Mapping (CIGAR string)]]
+  - [[#manifest-1][Manifest]]
   - [[#summary-strengths-and-weaknesses][Summary (Strengths and Weaknesses)]]
   - [[#build-image-1][Build image]]
   - [[#running-1][Running]]
   - [[#deleting-the-image-1][Deleting the image]]
 
 * Code Refactor (MovieDetailGetter.py)
+
+** Manifest
+*** [[file:./test_1/Makefile][Makefile]]
+  A Makefile is used to automate tasks such as creating, testing, and deleting the Docker image for the project host.
+*** [[file:./test_1/Dockerfile][Dockerfile]]
+  A Dockerfile script is used to build the project's Docker image.
+*** [[file:./test_1/setup.py][setup.py]]
+  The setup.py file packages the Python project. In this case, it checks if the necessary dependencies are installed and exports the MovieDetailGetter.py script to the virtual environment's bin folder. The Dockerfile appends this bin folder to the PATH variable of the running user, making the script and its dependencies available at runtime within the container.
+*** [[file:./test_1/requirements.txt][requirements.txt]]
+  A text file listing the dependencies required by the Python project.
+*** [[file:./test_1/MovieDetailgetter.py][MovieDetailgetter.py]]
+  This is the **MAIN** file of the project, containing the refactored code from the original script.
+*** [[file:./test_1/input.csv][input.csv]]
+  This file contains the original test data provided for the project. It is kept for verifying that the script works correctly.
+  
 ** Summary
 
 *** Code Organization and Modularity
@@ -184,8 +201,26 @@ Deleted: c15b025214956c9957326448d1b2bbe6ef509d860038a26f164eeb1f35249978
 make: Leaving directory '/home/hugo/projects/job_test/repo/test_1'
 #+end_src
 
-* Alignment Mapping (Cigar string)
+* Alignment Mapping (CIGAR string)
 
+** Manifest
+*** [[file:./test_2/Makefile][Makefile]]
+  A Makefile is used to automate tasks such as creating, testing, and deleting the Docker image for the project host.
+*** [[file:./test_2/Dockerfile][Dockerfile]]
+  A Dockerfile script is used to build the project's Docker image.
+*** [[file:./test_2/setup.py][setup.py]]
+  The setup.py file packages the Python project. In this case, it checks if the necessary dependencies are installed and exports the part2_solver.py script to the virtual environment's bin folder. The Dockerfile appends this bin folder to the PATH variable of the running user, making the script and its dependencies available at runtime within the container.
+*** [[file:./test_2/requirements.txt][requirements.txt]]
+  A text file listing the dependencies required by the Python project.
+*** [[file:./test_2/part2_solver.py][part2_solver.py]]
+  This is the **MAIN** file of the project, it contains my solution for the CIGAR string test.
+*** [[file:./test_2/input_1.tsv][input_1.tsv]]
+  This is a text file with the test input choords.
+*** [[file:./test_2/input_2.tsv][input_2.tsv]]
+  This is a text file with the test input queries.
+*** [[file:./test_2/expected_output.tsv][expected_output.tsv]]
+  This is a text file the expected output.
+  
 ** Summary (Strengths and Weaknesses)
 
 *** Strengths
